@@ -1,7 +1,5 @@
-// app/page.js
-
-import LoginPage from "@/components/LoginPage";
-import AdminPanel from "../components/AdminPanel";
+import LoginPage from "@/app/login/page";
+import AdminPanel from "@/app/admin/page";
 
 export default function HomePage() {
   return (
