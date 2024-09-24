@@ -4,10 +4,14 @@ import useDelete from "@/hooks/useDelete";
 import useFetch from "@/hooks/useFetch";
 import usePost from "@/hooks/usePost";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const router = useRouter();
 
   const {
     data: fetchedUsers,
@@ -16,6 +20,16 @@ function AdminPanel() {
     success,
     refetch,
   } = useFetch("/api/users/get");
+
+  useEffect(() => {
+    async function fetchCurrentUser() {
+      const response = await fetch("/api/auth/me");
+      const userData = await response.json();
+      setCurrentUser(userData.user);
+    }
+
+    fetchCurrentUser();
+  }, []);
 
   const {
     postData: updateStatus,
@@ -88,8 +102,27 @@ function AdminPanel() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+
+    router.push("/login");
+  };
+
   return (
     <div className="p-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-xl font-bold">
+          Hello, {currentUser ? currentUser.name : "User"}!
+        </h1>
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Logout
+        </button>
+      </div>
+
       <h2 className="text-xl font-bold">User Registry</h2>
 
       <div className="flex space-x-4 mb-4">
