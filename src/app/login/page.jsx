@@ -1,8 +1,8 @@
-"use client"; // This marks the component as a Client Component for Next.js
+"use client";
 
+import axios from "axios";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // Use Next.js router
-import axios from "axios"; // For making API requests to your backend
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,7 +13,6 @@ function LoginPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-  // Function to handle registration
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -36,7 +35,6 @@ function LoginPage() {
     }
   };
 
-  // Function to handle login
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -47,7 +45,6 @@ function LoginPage() {
       });
 
       if (response.status === 200) {
-        alert("Logged in successfully");
         router.push("/admin");
       }
     } catch (error) {

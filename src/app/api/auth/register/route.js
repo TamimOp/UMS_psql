@@ -1,3 +1,6 @@
+import { createCookie } from "@/utils/api/cookies";
+import { generateToken } from "@/utils/api/jwt";
+import { genericResponse } from "@/utils/api/routeTemplate";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -5,9 +8,7 @@ const prisma = new PrismaClient();
 
 export async function POST(req) {
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ message: "Method not allowed" }), {
-      status: 405,
-    });
+    return genericResponse(405, "Method not allowed");
   }
 
   try {
@@ -24,21 +25,17 @@ export async function POST(req) {
       },
     });
 
-    console.log(user);
+    // Generate the JWT token
+    const token = generateToken({ id: user.id, email: user.email });
 
-    return new Response(JSON.stringify({ user }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    // Serialize the cookie
+    const cookie = createCookie(token);
+
+    return genericResponse(200, user, "user", cookie);
   } catch (error) {
-    console.log(error);
-    return new Response(
-      JSON.stringify({
-        error: "User already exists or another error occurred",
-      }),
-      {
-        status: 400,
-      }
+    return genericResponse(
+      400,
+      "User already exists or another error occurred"
     );
   }
 }
