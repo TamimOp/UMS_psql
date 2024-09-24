@@ -25,10 +25,8 @@ export async function POST(req) {
       },
     });
 
-    // Generate the JWT token
     const token = generateToken({ id: user.id, email: user.email });
 
-    // Serialize the cookie
     const cookie = createCookie(token);
 
     return genericResponse(200, user, "user", cookie);

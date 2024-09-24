@@ -4,10 +4,14 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const updateUsersStatus = async (req) => {
-  const { id, status: sts } = await req.json();
+  const { userIds, status: sts } = await req.json();
 
-  const updatedUser = await prisma.user.update({
-    where: { id },
+  const updatedUser = await prisma.user.updateMany({
+    where: {
+      id: {
+        in: userIds,
+      },
+    },
     data: { status: sts },
   });
 
