@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
 
   const router = useRouter();
 
@@ -20,16 +19,8 @@ function AdminPanel() {
     success,
     refetch,
   } = useFetch("/api/users/get");
-
-  useEffect(() => {
-    async function fetchCurrentUser() {
-      const response = await fetch("/api/auth/me");
-      const userData = await response.json();
-      setCurrentUser(userData.user);
-    }
-
-    fetchCurrentUser();
-  }, []);
+  const { data: cookie, isLoading: cookieLoading } =
+    useFetch("/api/auth/verify");
 
   const {
     postData: updateStatus,
@@ -42,6 +33,23 @@ function AdminPanel() {
     isLoading: isDeletingUser,
     error: errorDeletingUser,
   } = useDelete("/api/users/delete");
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+
+    router.push("/login");
+  };
+
+  useEffect(() => {
+    function checkBlock() {
+      if (!cookie) return;
+      if (cookie.decoded.status == "Blocked") {
+        handleLogout();
+      }
+    }
+    checkBlock();
+  }, [cookie]);
 
   useEffect(() => {
     if (success && fetchedUsers) {
@@ -68,6 +76,19 @@ function AdminPanel() {
     }
   };
 
+  function formatDate(isoDateString) {
+    const date = new Date(isoDateString);
+
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = String(date.getUTCFullYear()).slice(-2);
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  }
+
   const handleBlockUsers = async () => {
     await updateStatus({ userIds: selectedUsers, status: "Blocked" });
     if (!errorUpdatingStatus) {
@@ -78,7 +99,11 @@ function AdminPanel() {
             : user
         )
       );
+
       setSelectedUsers([]);
+      if (selectedUsers.includes(cookie.decoded.id)) {
+        handleLogout();
+      }
     }
   };
 
@@ -99,21 +124,17 @@ function AdminPanel() {
     if (!errorDeletingUser) {
       setUsers(users.filter((user) => !selectedUsers.includes(user.id)));
       setSelectedUsers([]);
+      if (selectedUsers.includes(cookie.decoded.id)) {
+        handleLogout();
+      }
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    sessionStorage.removeItem("token");
-
-    router.push("/login");
   };
 
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-xl font-bold">
-          Hello, {currentUser ? currentUser.name : "User"}!
+          Hello, {!cookieLoading ? cookie?.decoded.name : "User"}!
         </h1>
         <button
           onClick={handleLogout}
@@ -182,7 +203,9 @@ function AdminPanel() {
                 </span>
               </td>
               <td className="border px-4 py-2">{user.email}</td>
-              <td className="border px-4 py-2">{user.lastLogin || "-"}</td>
+              <td className="border px-4 py-2">
+                {formatDate(user.lastLogin) || "-"}
+              </td>
               <td className="border px-4 py-2">{user.status}</td>
             </tr>
           ))}

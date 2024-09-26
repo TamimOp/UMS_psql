@@ -16,4 +16,5 @@ model User {
   status    String   @default("Active")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  lastLogin  DateTime @default(now())
 }

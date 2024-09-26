@@ -25,7 +25,12 @@ export async function POST(req) {
       },
     });
 
-    const token = generateToken({ id: user.id, email: user.email });
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      status: user.status,
+    });
 
     const cookie = createCookie(token);
 

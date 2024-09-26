@@ -28,8 +28,18 @@ export async function POST(req) {
       return genericResponse(401, "Invalid password");
     }
 
-    const token = generateToken({ id: user.id, email: user.email });
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      status: user.status,
+    });
     const cookie = createCookie(token);
+
+    await prisma.user.update({
+      where: { email },
+      data: { lastLogin: new Date() },
+    });
 
     return genericResponse(200, "Login successful", "message", cookie);
   } catch (error) {
