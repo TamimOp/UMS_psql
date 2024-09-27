@@ -25,7 +25,6 @@ function LoginPage() {
       });
 
       if (response.status === 200) {
-        alert("User registered successfully");
         router.push("/admin");
       }
     } catch (error) {
